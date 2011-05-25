@@ -20,9 +20,8 @@ public class VersionContext
     public static final RelationshipType PREV_VERSION_REL_TYPE = DynamicRelationshipType.withName( "__PREV_VERSION__" );
     public static final String DELETED_PROP_KEY = "__deleted__";
     private long version;
-    private boolean useVersionedNodes;
 
-    public static VersionContext versionContext( long version )
+    public static VersionContext vc( long version )
     {
         return new VersionContext( version );
     }
@@ -32,15 +31,10 @@ public class VersionContext
         this.version = version;
     }
 
-    public VersionedNode forNode( Node node )
+    public VersionedNode node( Node node )
     {
         getPropHolderNode( node );
         return new VersionedNode( node, this );
-    }
-
-    private static NotFoundException versionNotFound( long version )
-    {
-        return new NotFoundException( "Version [" + version + "] not found." );
     }
 
     public boolean hasValidVersion( PropertyContainer propertyContainer )
@@ -48,6 +42,73 @@ public class VersionContext
         Range range = VersionContext.getVersion( propertyContainer );
         System.out.println("range: " + range);
         return range != null && range.contains( version );
+    }
+
+    private Node getPropHolderNode( Node node )
+    {
+        return getPropHolderNodeForVersion( node, version );
+    }
+
+    public Object getProperty( Node node, String key )
+    {
+        return getPropHolderNode( node ).getProperty( key );
+    }
+
+    public boolean hasProperty( Node node, String key )
+    {
+        return getProperty( node, key, null ) != null;
+    }
+
+    public Object getProperty( Node node, String key, Object defaultValue )
+    {
+        try
+        {
+            return getProperty( node, key );
+        }
+        catch ( NotFoundException e )
+        {
+            return defaultValue;
+        }
+    }
+
+    public Iterable<String> getPropertyKeys( Node node )
+    {
+        Node propHolderNode = getPropHolderNode( node );
+        return rawGetPropertyKeys( propHolderNode );
+    }
+
+    public Iterable<Object> getPropertyValues( Node node )
+    {
+        final Node propHolderNode = getPropHolderNode( node );
+        return new IterableWrapper<Object, String>( rawGetPropertyKeys( propHolderNode ) )
+        {
+            @Override
+            protected Object underlyingObjectToObject( String object )
+            {
+                return propHolderNode.getProperty( object );
+            }
+        };
+    }
+
+    private Iterable<String> rawGetPropertyKeys( Node propHolderNode )
+    {
+        return new FilteringIterable<String>( propHolderNode.getPropertyKeys(), new Predicate<String>()
+        {
+            public boolean accept( String item )
+            {
+                return !item.equals( VALID_FROM_PROPERTY ) && !item.equals( VALID_TO_PROPERTY );
+            }
+        } );
+    }
+
+    public void deleteRelationship( Relationship relationship )
+    {
+        relationship.setProperty( DELETED_PROP_KEY, version );
+    }
+
+    public void deleteNode( Node node )
+    {
+        node.setProperty( DELETED_PROP_KEY, version );
     }
 
     private static Node copyPropsToNewNode( Node node )
@@ -132,77 +193,10 @@ public class VersionContext
             Relationship prevVersionRel = node.getSingleRelationship( PREV_VERSION_REL_TYPE, Direction.OUTGOING );
             if ( prevVersionRel == null )
             {
-                throw versionNotFound( version );
+                throw new NotFoundException( "Version [" + version + "] not found." );
             }
             return getPropHolderNodeForVersion( prevVersionRel.getOtherNode( node ), version );
         }
         return node;
-    }
-
-    private Node getPropHolderNode( Node node )
-    {
-        return getPropHolderNodeForVersion( node, version );
-    }
-
-    public Object getProperty( Node node, String key )
-    {
-        return getPropHolderNode( node ).getProperty( key );
-    }
-
-    public boolean hasProperty( Node node, String key )
-    {
-        return getProperty( node, key, null ) != null;
-    }
-
-    public Object getProperty( Node node, String key, Object defaultValue )
-    {
-        try
-        {
-            return getProperty( node, key );
-        }
-        catch ( NotFoundException e )
-        {
-            return defaultValue;
-        }
-    }
-
-    public Iterable<String> getPropertyKeys( Node node )
-    {
-        Node propHolderNode = getPropHolderNode( node );
-        return rawGetPropertyKeys( propHolderNode );
-    }
-
-    public Iterable<Object> getPropertyValues( Node node )
-    {
-        final Node propHolderNode = getPropHolderNode( node );
-        return new IterableWrapper<Object, String>( rawGetPropertyKeys( propHolderNode ) )
-        {
-            @Override
-            protected Object underlyingObjectToObject( String object )
-            {
-                return propHolderNode.getProperty( object );
-            }
-        };
-    }
-
-    private Iterable<String> rawGetPropertyKeys( Node propHolderNode )
-    {
-        return new FilteringIterable<String>( propHolderNode.getPropertyKeys(), new Predicate<String>()
-        {
-            public boolean accept( String item )
-            {
-                return !item.equals( VALID_FROM_PROPERTY ) && !item.equals( VALID_TO_PROPERTY );
-            }
-        } );
-    }
-
-    public void deleteRelationship( Relationship relationship )
-    {
-        relationship.setProperty( DELETED_PROP_KEY, version );
-    }
-
-    public void deleteNode( Node node )
-    {
-        node.setProperty( DELETED_PROP_KEY, version );
     }
 }

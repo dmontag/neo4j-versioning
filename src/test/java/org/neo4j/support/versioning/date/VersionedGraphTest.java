@@ -22,7 +22,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.neo4j.support.versioning.date.VersionContext.versionContext;
+import static org.neo4j.support.versioning.date.VersionContext.vc;
 
 public class VersionedGraphTest
 {
@@ -40,7 +40,7 @@ public class VersionedGraphTest
     @After
     public void tearDown()
     {
-        graphDb.shutdown(false);
+        graphDb.shutdown( false );
     }
 
     @Test
@@ -51,8 +51,8 @@ public class VersionedGraphTest
         Relationship rel = createRelationship( n1, n2, RelTypes.LINKED );
 
         assertAdjacency( rel,
-            versionContext( versioningTransactionEventHandler.getLatestVersion() ).forNode( n1 ),
-            versionContext( versioningTransactionEventHandler.getLatestVersion() - 1 ).forNode( n1 ) );
+            vc( versioningTransactionEventHandler.getLatestVersion() ).node( n1 ),
+            vc( versioningTransactionEventHandler.getLatestVersion() - 1 ).node( n1 ) );
     }
 
     @Test
@@ -68,36 +68,36 @@ public class VersionedGraphTest
         removeProperty( node, "key" );
         long nokeyVersion = versioningTransactionEventHandler.getLatestVersion();
 
-        assertEquals( "foo", versionContext( fooVersion ).forNode( node ).getProperty( "key", null ) );
-        assertEquals( "bar", versionContext( barVersion ).forNode( node ).getProperty( "key", null ) );
-        assertEquals( "zoo", versionContext( zooVersion ).forNode( node ).getProperty( "key", null ) );
-        assertEquals( null, versionContext( nokeyVersion ).forNode( node ).getProperty( "key", null ) );
+        assertEquals( "foo", vc( fooVersion ).node( node ).getProperty( "key", null ) );
+        assertEquals( "bar", vc( barVersion ).node( node ).getProperty( "key", null ) );
+        assertEquals( "zoo", vc( zooVersion ).node( node ).getProperty( "key", null ) );
+        assertEquals( null, vc( nokeyVersion ).node( node ).getProperty( "key", null ) );
 
-        assertEquals( "foo", versionContext( fooVersion ).forNode( node ).getProperty( "key" ) );
-        assertEquals( "bar", versionContext( barVersion ).forNode( node ).getProperty( "key" ) );
-        assertEquals( "zoo", versionContext( zooVersion ).forNode( node ).getProperty( "key" ) );
+        assertEquals( "foo", vc( fooVersion ).node( node ).getProperty( "key" ) );
+        assertEquals( "bar", vc( barVersion ).node( node ).getProperty( "key" ) );
+        assertEquals( "zoo", vc( zooVersion ).node( node ).getProperty( "key" ) );
         try
         {
-            versionContext( nokeyVersion ).forNode( node ).getProperty( "key" );
+            vc( nokeyVersion ).node( node ).getProperty( "key" );
             fail( "Should have thrown exception." );
         }
         catch ( NotFoundException e )
         {
         }
 
-        assertTrue( versionContext( barVersion ).forNode( node ).hasProperty( "key" ) );
-        assertFalse( versionContext( barVersion ).forNode( node ).hasProperty( "other" ) );
-        assertTrue( versionContext( zooVersion ).forNode( node ).hasProperty( "other" ) );
-        assertFalse( versionContext( nokeyVersion ).forNode( node ).hasProperty( "key" ) );
-        assertTrue( versionContext( nokeyVersion ).forNode( node ).hasProperty( "other" ) );
+        assertTrue( vc( barVersion ).node( node ).hasProperty( "key" ) );
+        assertFalse( vc( barVersion ).node( node ).hasProperty( "other" ) );
+        assertTrue( vc( zooVersion ).node( node ).hasProperty( "other" ) );
+        assertFalse( vc( nokeyVersion ).node( node ).hasProperty( "key" ) );
+        assertTrue( vc( nokeyVersion ).node( node ).hasProperty( "other" ) );
 
-        assertEquals( asSet( "key" ), addToSet( versionContext( barVersion ).forNode( node ).getPropertyKeys() ) );
-        assertEquals( asSet( "key", "other" ), addToSet( versionContext( zooVersion ).forNode( node ).getPropertyKeys() ) );
-        assertEquals( asSet( "other" ), addToSet( versionContext( nokeyVersion ).forNode( node ).getPropertyKeys() ) );
+        assertEquals( asSet( "key" ), addToSet( vc( barVersion ).node( node ).getPropertyKeys() ) );
+        assertEquals( asSet( "key", "other" ), addToSet( vc( zooVersion ).node( node ).getPropertyKeys() ) );
+        assertEquals( asSet( "other" ), addToSet( vc( nokeyVersion ).node( node ).getPropertyKeys() ) );
 
-        assertEquals( asSet( "bar" ), addToSet( versionContext( barVersion ).forNode( node ).getPropertyValues() ) );
-        assertEquals( asSet( "zoo", "asdf" ), addToSet( versionContext( zooVersion ).forNode( node ).getPropertyValues() ) );
-        assertEquals( asSet( "asdf" ), addToSet( versionContext( nokeyVersion ).forNode( node ).getPropertyValues() ) );
+        assertEquals( asSet( "bar" ), addToSet( vc( barVersion ).node( node ).getPropertyValues() ) );
+        assertEquals( asSet( "zoo", "asdf" ), addToSet( vc( zooVersion ).node( node ).getPropertyValues() ) );
+        assertEquals( asSet( "asdf" ), addToSet( vc( nokeyVersion ).node( node ).getPropertyValues() ) );
     }
 
     private <T> Set<T> asSet( T... t )
@@ -118,9 +118,9 @@ public class VersionedGraphTest
         createRelationship( n1, n3, RelTypes.LINKED );
         long secondVersion = versioningTransactionEventHandler.getLatestVersion();
 
-        Relationship r1 = versionContext( firstVersion ).forNode( n1 ).getSingleRelationship( RelTypes.LINKED, Direction.OUTGOING );
+        Relationship r1 = vc( firstVersion ).node( n1 ).getSingleRelationship( RelTypes.LINKED, Direction.OUTGOING );
         assertEquals( n2, r1.getEndNode() );
-        Relationship r2 = versionContext( secondVersion ).forNode( n1 ).getSingleRelationship( RelTypes.LINKED, Direction.OUTGOING );
+        Relationship r2 = vc( secondVersion ).node( n1 ).getSingleRelationship( RelTypes.LINKED, Direction.OUTGOING );
         assertEquals( n3, r2.getEndNode() );
     }
 
@@ -135,13 +135,13 @@ public class VersionedGraphTest
         removeNode( n2 );
         long secondVersion = versioningTransactionEventHandler.getLatestVersion();
 
-        Relationship r1 = versionContext( firstVersion ).forNode( n1 ).getSingleRelationship( RelTypes.LINKED, Direction.OUTGOING );
+        Relationship r1 = vc( firstVersion ).node( n1 ).getSingleRelationship( RelTypes.LINKED, Direction.OUTGOING );
         assertEquals( n2, r1.getEndNode() );
-        Relationship r2 = versionContext( secondVersion ).forNode( n1 ).getSingleRelationship( RelTypes.LINKED, Direction.OUTGOING );
+        Relationship r2 = vc( secondVersion ).node( n1 ).getSingleRelationship( RelTypes.LINKED, Direction.OUTGOING );
         assertEquals( null, r2 );
         try
         {
-            versionContext( secondVersion ).forNode( n2 );
+            vc( secondVersion ).node( n2 );
             fail( "Should have thrown exception." );
         }
         catch ( NotFoundException e )
@@ -241,7 +241,7 @@ public class VersionedGraphTest
         Transaction tx = graphDb.beginTx();
         try
         {
-            versionContext( versioningTransactionEventHandler.getLatestVersion() ).deleteRelationship( relationship );
+            vc( versioningTransactionEventHandler.getLatestVersion() ).deleteRelationship( relationship );
             tx.success();
         }
         finally
@@ -255,7 +255,7 @@ public class VersionedGraphTest
         Transaction tx = graphDb.beginTx();
         try
         {
-            versionContext( versioningTransactionEventHandler.getLatestVersion() ).deleteNode( node );
+            vc( versioningTransactionEventHandler.getLatestVersion() ).deleteNode( node );
             tx.success();
         }
         finally
