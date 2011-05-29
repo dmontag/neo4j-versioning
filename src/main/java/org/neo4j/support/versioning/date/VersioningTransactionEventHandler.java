@@ -10,23 +10,41 @@ import org.neo4j.support.versioning.Range;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicLong;
 
 import static org.neo4j.support.versioning.Range.range;
-import static org.neo4j.support.versioning.date.VersionContext.*;
+import static org.neo4j.support.versioning.date.VersionContext.getStartVersion;
+import static org.neo4j.support.versioning.date.VersionContext.setEndVersion;
+import static org.neo4j.support.versioning.date.VersionContext.setStartVersion;
+import static org.neo4j.support.versioning.date.VersionContext.setVersion;
 
 public class VersioningTransactionEventHandler implements TransactionEventHandler<Object>
 {
-    private final AtomicLong latestVersion = new AtomicLong( 0 );
+    private static final String LATEST_VERSION_PROP_KEY = "__LATEST_VERSION__";
+    public static final String LOCK_PROP_KEY = "__DUMMY_LOCK__";
+    private final Node versionDataNode;
+
+    public VersioningTransactionEventHandler( Node versionDataNode )
+    {
+        this.versionDataNode = versionDataNode;
+    }
 
     public Object beforeCommit( TransactionData data ) throws Exception
     {
-        long version = latestVersion.incrementAndGet();
+        long version = getNextVersionNumber();
         processCreatedNodes( version, data.createdNodes() );
         processCreatedRelationships( version, data.createdRelationships() );
         processMarkedDeletedRelationships( version, data.assignedRelationshipProperties() );
         rotateProperties( version, findModifiedProperties( version, data ) );
         return null;
+    }
+
+    private long getNextVersionNumber()
+    {
+        versionDataNode.setProperty( LOCK_PROP_KEY, 0 );
+        long latestVersion = getLatestVersion();
+        long nextVersion = latestVersion + 1;
+        setLatestVersion( nextVersion );
+        return nextVersion;
     }
 
     private static void processCreatedNodes( long version, Iterable<Node> createdNodes )
@@ -157,13 +175,13 @@ public class VersioningTransactionEventHandler implements TransactionEventHandle
     {
     }
 
-    public void setLatestVersion( long latestVersion )
+    public void setLatestVersion( long version )
     {
-        this.latestVersion.set( latestVersion );
+        versionDataNode.setProperty( LATEST_VERSION_PROP_KEY, version );
     }
 
     public long getLatestVersion()
     {
-        return latestVersion.get();
+        return (Long) versionDataNode.getProperty( LATEST_VERSION_PROP_KEY, 0L );
     }
 }

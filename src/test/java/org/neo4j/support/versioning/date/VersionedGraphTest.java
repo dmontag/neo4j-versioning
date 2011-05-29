@@ -33,7 +33,7 @@ public class VersionedGraphTest
     public void setUp() throws IOException
     {
         graphDb = new ImpermanentGraphDatabase();
-        versioningTransactionEventHandler = new VersioningTransactionEventHandler();
+        versioningTransactionEventHandler = new VersioningTransactionEventHandler(graphDb.getReferenceNode());
         graphDb.registerTransactionEventHandler( versioningTransactionEventHandler );
     }
 

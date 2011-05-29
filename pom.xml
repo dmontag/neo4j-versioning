@@ -8,11 +8,25 @@
   <artifactId>neo4j-versioning</artifactId>
   <version>1.0</version>
 
+  <repositories>
+    <repository>
+      <id>neo4j-snapshot-repository</id>
+      <name>Neo4j Maven 2 snapshot repository</name>
+      <url>http://m2.neo4j.org/snapshots</url>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+    </repository>
+  </repositories>
+
   <dependencies>
     <dependency>
       <groupId>org.neo4j</groupId>
       <artifactId>neo4j</artifactId>
-      <version>1.4.M02</version>
+      <version>1.4-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
