@@ -1,0 +1,58 @@
+h1. Neo4j Versioning
+
+h2. To set up
+
+Add a VersioningTransactionEventHandler as a transaction event handler to the GraphDatabaseService used:
+
+<pre>
+GraphDatabaseService graphDb = ...;
+VersioningTransactionEventHandler eventHandler = new VersioningTransactionEventHandler(graphDb.getReferenceNode());
+graphDb.registerTransactionEventHandler( eventHandler );
+</pre>
+
+The event handler takes a constructor argument which is a node to store the config on, so that the latest version
+number can be stored in-graph.
+
+
+h2. To read
+
+import static org.neo4j.support.versioning.date.VersionContext.vc;
+
+<pre>
+// Obtain node from somewhere, e.g. index lookups
+Node someNode = ...;
+
+// Versioned node, seeing the graph as it looked at time 1234
+Node versionedNode = vc(1234).node(someNode);
+
+long snapshot = myVersioningTransactionEventHandler.getLatestVersion();
+Node head = vc(snapshot).node(someNode);
+</pre>
+
+
+h2. To write
+
+<pre>
+Transaction tx = graphDb.beginTx();
+try {
+    Node bob = graphDb.createNode();
+    Node jim = graphDb.createNode();
+    bob.createRelationshipTo(jim, KNOWS);
+    tx.success();
+} finally {
+    tx.finish();
+}
+</pre>
+
+Deletion of nodes and relationships must be done specially via:
+
+<pre>
+Transaction tx = graphDb.beginTx();
+try {
+    vc(1234).deleteNode(...);
+    vc(1234).deleteRelationship(...);
+    tx.success();
+} finally {
+    tx.finish();
+}
+</pre>

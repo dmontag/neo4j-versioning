@@ -56,6 +56,12 @@ public class VersionedNode implements Node
         return getValidRelationships( node.getRelationships( type, dir ) );
     }
 
+    @Override
+    public Iterable<Relationship> getRelationships( Direction direction, RelationshipType... types )
+    {
+        return getValidRelationships( node.getRelationships( direction, types ) );
+    }
+
     private Iterable<Relationship> getValidRelationships( Iterable<Relationship> relationships )
     {
         return new IterableWrapper<Relationship, Relationship>( new FilteringIterable<Relationship>( relationships,
@@ -96,6 +102,12 @@ public class VersionedNode implements Node
     public boolean hasRelationship( RelationshipType type, Direction dir )
     {
         return getRelationships( type, dir ).iterator().hasNext();
+    }
+
+    @Override
+    public boolean hasRelationship( Direction direction, RelationshipType... types )
+    {
+        return getRelationships(direction, types ).iterator().hasNext();
     }
 
     public Relationship getSingleRelationship( RelationshipType type, Direction dir )

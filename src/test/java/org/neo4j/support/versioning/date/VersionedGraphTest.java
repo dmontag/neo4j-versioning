@@ -18,6 +18,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -147,6 +148,30 @@ public class VersionedGraphTest
         catch ( NotFoundException e )
         {
         }
+    }
+
+    @Test
+    public void testRelationshipMethodsThatReturnVersionedNodes() {
+        Node n2 = createNode();
+        Node n3 = createNode();
+
+        createRelationship( n2, n3, RelTypes.LINKED );
+        long snapshot = versioningTransactionEventHandler.getLatestVersion();
+        createRelationship( n2, n3, RelTypes.LINKED );
+
+        Relationship versionedRel = vc( snapshot ).node( n2 ).getSingleRelationship( RelTypes.LINKED, Direction.OUTGOING );
+        assertEquals( n2, versionedRel.getStartNode() );
+        assertEquals( n3, versionedRel.getEndNode() );
+        assertEquals( n3, versionedRel.getOtherNode( n2 ) );
+        assertEquals( n2, versionedRel.getOtherNode( n3 ) );
+        assertTrue( versionedRel.getStartNode() instanceof VersionedNode );
+        assertTrue( versionedRel.getEndNode() instanceof VersionedNode );
+        assertTrue( versionedRel.getOtherNode( n2 ) instanceof VersionedNode );
+        assertTrue( versionedRel.getOtherNode( n3 ) instanceof VersionedNode );
+        Node[] nodes = versionedRel.getNodes();
+        assertArrayEquals( new Node[] { n2, n3 }, nodes );
+        assertTrue( nodes[0] instanceof VersionedNode );
+        assertTrue( nodes[1] instanceof VersionedNode );
     }
 
     private void assertAdjacency( Relationship rel, VersionedNode overlappingVersionedNode, VersionedNode nonOverlappingVersionedNode )

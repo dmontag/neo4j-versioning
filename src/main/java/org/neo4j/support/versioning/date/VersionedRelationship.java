@@ -28,22 +28,23 @@ public class VersionedRelationship implements Relationship
 
     public Node getStartNode()
     {
-        return relationship.getStartNode();
+        return new VersionedNode( relationship.getStartNode(), versionContext );
     }
 
     public Node getEndNode()
     {
-        return relationship.getEndNode();
+        return new VersionedNode( relationship.getEndNode(), versionContext );
     }
 
     public Node getOtherNode( Node node )
     {
-        return relationship.getOtherNode( node );
+        return new VersionedNode( relationship.getOtherNode( node ), versionContext );
     }
 
     public Node[] getNodes()
     {
-        return relationship.getNodes();
+        Node[] nodes = relationship.getNodes();
+        return new Node[] { new VersionedNode( nodes[0], versionContext ), new VersionedNode( nodes[1], versionContext ) };
     }
 
     public RelationshipType getType()
