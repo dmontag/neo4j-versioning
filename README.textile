@@ -1,5 +1,8 @@
 h1. Neo4j Versioning
 
+Every change to the graph bumps the version number used. The graph can then be viewed at any given version number.
+With fairly little effort, this library can be modified to provide timestamp-based versioning instead.
+
 h2. To set up
 
 Add a VersioningTransactionEventHandler as a transaction event handler to the GraphDatabaseService used:
@@ -31,6 +34,8 @@ Node head = vc(snapshot).node(someNode);
 
 
 h2. To write
+
+Most things are taken care of by the event handler seamlessly. Every transaction will bump the version number.
 
 <pre>
 Transaction tx = graphDb.beginTx();
