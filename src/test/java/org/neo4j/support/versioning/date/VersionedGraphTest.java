@@ -10,7 +10,7 @@ import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.helpers.collection.IteratorUtil;
-import org.neo4j.support.versioning.ImpermanentGraphDatabase;
+import org.neo4j.kernel.ImpermanentGraphDatabase;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -40,7 +40,7 @@ public class VersionedGraphTest
     @After
     public void tearDown()
     {
-        graphDb.shutdown( false );
+        graphDb.shutdown();
     }
 
     @Test
