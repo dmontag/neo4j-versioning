@@ -19,9 +19,11 @@ number can be stored in-graph.
 
 h2. To read
 
-import static org.neo4j.support.versioning.date.VersionContext.vc;
+Use a VersionContext to browse the graph as it looked at a given version.
 
 <pre>
+import static org.neo4j.support.versioning.date.VersionContext.vc;
+
 // Obtain node from somewhere, e.g. index lookups
 Node someNode = ...;
 
@@ -49,7 +51,7 @@ try {
 }
 </pre>
 
-Deletion of nodes and relationships must be done specially via:
+Deletion of nodes and relationships must be done specially.
 
 <pre>
 Transaction tx = graphDb.beginTx();
