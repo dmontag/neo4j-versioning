@@ -30,7 +30,7 @@ Node someNode = ...;
 // Versioned node, seeing the graph as it looked at time 1234
 Node versionedNode = vc(1234).node(someNode);
 
-long snapshot = myVersioningTransactionEventHandler.getLatestVersion();
+long snapshot = eventHandler.getLatestVersion();
 Node head = vc(snapshot).node(someNode);
 </pre>
 
