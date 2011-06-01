@@ -63,3 +63,9 @@ try {
     tx.finish();
 }
 </pre>
+
+
+h2. Indexing
+
+This versioning component does currently not cover indexing.
+
