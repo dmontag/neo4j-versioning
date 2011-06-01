@@ -56,8 +56,8 @@ Deletion of nodes and relationships must be done specially.
 <pre>
 Transaction tx = graphDb.beginTx();
 try {
-    vc(1234).deleteNode(...);
-    vc(1234).deleteRelationship(...);
+    vc(1234).deleteNode(someNode);
+    vc(1234).deleteRelationship(someRelationship);
     tx.success();
 } finally {
     tx.finish();
