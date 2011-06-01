@@ -10,7 +10,7 @@ Add a VersioningTransactionEventHandler as a transaction event handler to the Gr
 <pre>
 GraphDatabaseService graphDb = ...;
 VersioningTransactionEventHandler eventHandler = new VersioningTransactionEventHandler(graphDb.getReferenceNode());
-graphDb.registerTransactionEventHandler( eventHandler );
+graphDb.registerTransactionEventHandler(eventHandler);
 </pre>
 
 The event handler takes a constructor argument which is a node to store the config on, so that the latest version
